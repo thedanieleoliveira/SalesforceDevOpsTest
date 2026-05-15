@@ -1,0 +1,39 @@
+name: Salesforce Validate Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  validate:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        run: npm install --global @salesforce/cli
+
+      - name: Create JWT key file
+        run: echo "${{ secrets.SF_PROD_JWT_KEY }}" > server.key
+
+      - name: Authenticate Salesforce
+        run: |
+          sf org login jwt \
+          --client-id ${{ secrets.SF_PROD_CLIENT_ID }} \
+          --jwt-key-file server.key \
+          --username ${{ secrets.SF_PROD_USERNAME }} \
+          --instance-url https://login.salesforce.com \
+          --alias prod
+
+      - name: Validate Deployment
+        run: |
+          sf project deploy validate \
+          --source-dir force-app \
+          --target-org prod \
+          --test-level RunLocalTests
