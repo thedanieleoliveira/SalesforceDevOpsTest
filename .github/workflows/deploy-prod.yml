@@ -12,6 +12,7 @@ jobs:
   validate:
 
     runs-on: ubuntu-latest
+    environment: PRD
 
     steps:
 
