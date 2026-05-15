@@ -1,9 +1,11 @@
 name: Salesforce Validate Production
 
 on:
-  push:
+
+  pull_request:
     branches:
       - main
+      - dev
 
 jobs:
 
@@ -20,14 +22,17 @@ jobs:
         run: npm install --global @salesforce/cli
 
       - name: Create JWT key file
-        run: echo "${{ secrets.SF_PROD_JWT_KEY }}" > server.key
+        run: |
+          cat <<EOF > server.key
+          ${{ secrets.SF_PROD_JWT_KEY }}
+          EOF
 
       - name: Authenticate Salesforce
         run: |
           sf org login jwt \
-          --client-id ${{ secrets.SF_PROD_CLIENT_ID }} \
+          --client-id "${{ secrets.SF_PROD_CLIENT_ID }}" \
           --jwt-key-file server.key \
-          --username ${{ secrets.SF_PROD_USERNAME }} \
+          --username "${{ secrets.SF_PROD_USERNAME }}" \
           --instance-url https://login.salesforce.com \
           --alias prod
 
